@@ -21,10 +21,7 @@ Then kick off the monitor program (here for 2m, connecting to flossie's computer
     144348.0     G6DOD/P   2:30:56.309887                   filter                           
     144385.0     GM4GUF/P  2:23:56.310971                   filter   
 
-That'll run continuously, updating every 30 seconds.  In another terminal, say:
-
-    $ python -m SimpleHTTPServer
-    Serving HTTP on 0.0.0.0 port 8000 ...
+That'll run continuously, updating every 30 seconds, and serve on port 8000.
 
 Right, all done.  Point your web-browser at the computer you're running all this on, at port 8000, e.g.:
 

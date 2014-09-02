@@ -5,6 +5,7 @@ import requests
 import logging
 from spot import SpotSource, Spot, SpotFromFile, SpotFilter
 from flossie import Log
+import sys
 logger = logging.getLogger(__name__)
 
 class Dxlite (SpotSource):
@@ -36,10 +37,8 @@ class Dxlite (SpotSource):
 		dxlite_data = requests.get(url, params=payload)
 		logger.debug('%s: url: %s', self.name, dxlite_data.url)
 		logger.debug('%s: dxlite returned %s', self.name,  dxlite_data)
-		if dxlite_data.error is not None:
-			logger.error('dxlite returned error %s', self.name, dxlite_data.error)
-		else:
-			self.parse(dxlite_data.content)
+		dxlite_data.raise_for_status()
+		self.parse(dxlite_data.content)
 
 	def fetcha (self, filters):
 		logger.warning('%s: using fake fetch.', self.name)
@@ -52,15 +51,28 @@ class Dxlite (SpotSource):
 				self.add_spot (frequency=float(spot.frequency.text),
 								time=datetime.strptime(spot.time.text,
 									'%Y-%m-%d %H:%M:%S'),
+								spotter=spot.spotter.text,
 								call=spot.dx.text)
 			else:
 				logger.debug('%s: dropped spot of %s', self.name, spot.dx.text)
 
 if __name__ == "__main__":
 	logging.basicConfig(level=logging.DEBUG)
-	d = Dxlite(23)
-	l = Log(23)
+	band=2
+	d = Dxlite(band)
+	l = Log(band, '2014_08_05_2m_UKAC')
 	l.update()
 	d.update()
 	f = SpotFilter(d, l)
-	f.print_lines()
+	output = """<html><head>
+	<meta http-equiv="refresh" content="15" > 
+	<title>Calls on cluster, not in log</title></head>
+	<body>
+	<h1> Calls on cluster, not in log </h1>
+	<pre>
+	"""
+	output += f.repr_html()
+	output += """<p>Last updated %s</p></body></html>""" % datetime.now()
+	file('log.html', 'w').write(output)
+
+	print d.repr_html()

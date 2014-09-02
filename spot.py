@@ -6,7 +6,7 @@ import cPickle
 
 logger = logging.getLogger(__name__)
 
-class Spot(namedtuple('Spot', 'call freq time source')):
+class Spot(namedtuple('Spot', 'call freq time source spotter')):
 	__slots__ = ()
 
 class SpotSource:
@@ -15,8 +15,10 @@ class SpotSource:
 		self.last = datetime.now() - timedelta(self.ttl)
 		logger.debug('Created new SpotSource %s' %self.name)
 
-	def add_spot (self, frequency=None, time=None, call=None):
-		s = Spot(call, frequency, time, self.name)
+	def add_spot (self, frequency=None, time=None, call=None, spotter=None, source=None):
+		if source is None:
+			source = self.name
+		s = Spot(call, frequency, time, source, spotter)
 		ttl = timedelta(seconds=self.ttl)
 		if time < datetime.now() + ttl:
 			self.spots.add(s)
@@ -31,10 +33,18 @@ class SpotSource:
 	def print_lines (self):
 		from clint.textui import columns, puts, colored
 		widths = [12, 9, 32, 32]
-		headers = ['Freq', 'Call', 'Age', 'Source']
+		headers = ['Freq', 'Call', 'Time', 'Source']
 		puts(columns(*map(list, zip(map(colored.red, headers), widths))))
 		for spot in sorted(self.spots, key=lambda x: x.freq):
-			puts(columns(*map(list, zip([str(spot.freq), spot.call, str(datetime.now()-spot.time), str(self.name)], widths))))
+			puts(columns(*map(list, zip([str(spot.freq), spot.call, str(datetime.now()-spot.time+timedelta(hours=1)), str(self.name)], widths))))
+
+	def repr_html (self):
+		output = "<table border=\"1px\"><tr><td>Freq</td><td>Call</td><td>Age</td><td>Spotter</td></tr>\n"
+		for spot in sorted(self.spots, key=lambda x: x.freq):
+			output += "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n" % (
+					str(spot.freq), spot.call, str(datetime.now()-(spot.time+timedelta(hours=1))), str(spot.spotter))
+		output += "</table>\n"
+		return output
 
 class SpotFromFile (SpotSource):
 	def __init__ (self, filename):
@@ -71,13 +81,28 @@ class SpotFilter(SpotSource):
 		self.update()
 
 	def update (self):
+		self.spot_source.update()
+		self.other.update()
 		excl_calls = [s.call for s in self.other.spots]
 		for spot in self.spot_source.spots:
 			if spot.call not in excl_calls:
-				self.add_spot(spot.freq, spot.time, spot.call)
+				self.add_spot(spot.freq, spot.time, spot.call, spot.spotter, spot.source)
 			else:
 				logger.debug('%s: filtered spot of %s', self.name, spot.call)
 
+class SpotMerge (SpotSource):
+	def __init__ (self, *args):
+		self.ttl = 0
+		self.name = 'filter'
+		self.sources = args
+		SpotSource.__init__(self)
+		self.update()
+
+	def update (self):
+		for source in self.sources:
+			source.update()
+			for spot in source.spots:
+				self.add_spot(spot.freq, spot.time, spot.call, spot.spotter, spot.source)
 class SpotPool:
 	def __init__ (self, update_interval):
 		self.last = 0

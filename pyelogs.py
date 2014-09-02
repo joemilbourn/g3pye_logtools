@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict, Counter
 import pandas as pd
 from StringIO import StringIO
 import os
@@ -6,6 +6,14 @@ from math import radians, degrees, sin, cos, atan2, floor
 import pylab
 import upoints
 from numpy import dtype
+import re
+import clint
+from spot import SpotSource
+
+def bearing (to_loc, from_loc='JO02CE'):
+	from_loc, to_loc = [upoints.point.Point(
+		*upoints.utils.from_grid_locator(x)) for x in [from_loc, to_loc]]
+	return from_loc.bearing(to_loc)
 
 class LogFile:
 	def __init__ (self, path):
@@ -62,7 +70,23 @@ def find_ukac_logs (log_dir):
 	logs = filter(is_ukac_p, logs)
 	print "Found %d UKAC logs" % len(logs)
 	df = pd.concat(l.qsos for l in logs)
+	df['bearing'] = df['Loc'].apply(bearing)
 	return df
 
+def UKAC_Logs(SpotSource):
+	def __init__ (self, band):
+		self.interval = None
+		self.ttl = None
+		self.name = 'Old Logs'
+		self.filters = ['M', 'G', 'GM', 'MM', 'GD', 'GI']
+		SpotSource.__init__(self)
+		
+		logs = find_ukac_logs('./logs')
+		
+		for row in logs.iterrows():
+			row = row[0]
+			print row
+
 if __name__ == "__main__":
-	logs = find_ukac_logs('logs')
+	prev = UKAC_Logs(2)
+	prev.print_lines()

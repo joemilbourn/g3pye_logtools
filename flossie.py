@@ -8,13 +8,13 @@ from spot import SpotSource, Spot, SpotFromFile
 logger = logging.getLogger(__name__)
 
 class Log (SpotSource):
-	def __init__ (self, band, db, update_interval=30, ttl=60*3):
+	def __init__ (self, band, ip, db, update_interval=30, ttl=60*3):
 		self.interval = update_interval
 		self.ttl = ttl
 		self.band = band 
 		self.name = "log"
 		#self.db = SqlSoup('mysql://root:g3pye@192.168.3.99/ukac20130226')
-		self.db = SqlSoup('mysql://root:g3pye@flossie01/%s' %db)
+		self.db = SqlSoup('mysql://root:g3pye@%s/%s' % (ip, db))
 		#self.db = SqlSoup('mysql://root:g3pye@192.168.0.104/%s' %db)
 		SpotSource.__init__(self)
 

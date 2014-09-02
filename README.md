@@ -27,4 +27,7 @@ That'll run continuously, updating every 30 seconds, and serve on port 8000.
 Right, all done.  Point your web-browser at the computer you're running all
 this on, at port 8000, e.g. if your computer is called toby:
 
-	$ x-www-browser https://toby:8000/log.html
+	$ x-www-browser https://toby:8000/log.html#
+
+If you're in flossie, all this is already checked out on the pi - 192.168.3.191 -
+in `~/zrn/g3pye_logtools`, but not installed yet.

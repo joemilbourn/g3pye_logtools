@@ -3,7 +3,8 @@ First, get the necessaries:
 
     $ pip install -r requirements.txt
 
-Then kick off the monitor program (here for 2m, connecting to flossie's computer on 192.168.3.127):
+Then kick off the monitor program (here for 2m, connecting to flossie's
+computer on 192.168.3.127):
 
     $ python cluster_not_in_log.py                                                               
     Enter band [4 6 2 70 23]: 2
@@ -23,6 +24,7 @@ Then kick off the monitor program (here for 2m, connecting to flossie's computer
 
 That'll run continuously, updating every 30 seconds, and serve on port 8000.
 
-Right, all done.  Point your web-browser at the computer you're running all this on, at port 8000, e.g.:
+Right, all done.  Point your web-browser at the computer you're running all
+this on, at port 8000, e.g. if your computer is called toby:
 
-    $ x-www-browser https:/toby.local:8000/log.html
+	$ x-www-browser https://toby:8000/log.html

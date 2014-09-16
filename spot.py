@@ -38,7 +38,7 @@ class SpotSource:
 		headers = ['Freq', 'Call', 'Time', 'Source']
 		puts(columns(*map(list, zip(map(colored.red, headers), widths))))
 		for spot in sorted(self.spots, key=lambda x: x.freq):
-			puts(columns(*map(list, zip([str(spot.freq), spot.call, str(datetime.now()-spot.time+timedelta(hours=1)), str(self.name)], widths))))
+			puts(columns(*map(list, zip([str(spot.freq), spot.call, str(datetime.now()-spot.time+timedelta(hours=1)), str(spot.source)], widths))))
 
 	def repr_html (self):
 		output = "<table border=\"1px\"><tr><td>Freq</td><td>Call</td><td>Age</td><td>Spotter</td></tr>\n"
@@ -76,7 +76,7 @@ class SpotFilter(SpotSource):
 	def __init__ (self, spots, excl):
 		""" takes spots from spots unless they're call is in excl """
 		self.ttl = 0
-		self.name = 'filter'
+		self.name = None
 		SpotSource.__init__(self)
 		self.spot_source = spots
 		self.other = excl
@@ -91,6 +91,22 @@ class SpotFilter(SpotSource):
 				self.add_spot(spot.freq, spot.time, spot.call, spot.spotter, spot.source)
 			else:
 				logger.debug('%s: filtered spot of %s', self.name, spot.call)
+
+class UnarySpotFilter (SpotSource):
+    def __init__ (self, spot_source, filter_fun):
+        """ filter_fun looks like lambda spot: spot.call == 'M0ZRN' """
+        self.name = None
+        self.ttl = spot_source.ttl
+        self.filter_fun = filter_fun
+        SpotSource.__init__(self)
+        self.spot_source = spot_source
+        self.update()
+
+    def update (self):
+        self.spot_source.update()
+        for spot in self.spot_source.spots:
+            if self.filter_fun(spot):
+                self.add_spot(spot.freq, spot.time, spot.call, spot.spotter, spot.source)
 
 class SpotMerge (SpotSource):
 	def __init__ (self, *args):
@@ -121,5 +137,7 @@ class SpotPool:
 
 if __name__ == "__main__":
 	logging.basicConfig(level=logging.DEBUG)
-	s = SpotFromFile('dxlite.spots')
-	s.print_lines()
+        import kst
+        k = kst.KST('m0zrn', 'joe123', '3')
+        u = UnarySpotFilter(k, lambda s: 'pye' in s.call.lower())
+        u.print_lines()

@@ -18,9 +18,11 @@ class SpotSource:
 	def add_spot (self, frequency=None, time=None, call=None, spotter=None, source=None):
 		if source is None:
 			source = self.name
-		s = Spot(call, frequency, time, source, spotter)
 		ttl = timedelta(seconds=self.ttl)
+		if time is None:
+			time = datetime.now()
 		if time < datetime.now() + ttl:
+			s = Spot(call, frequency, time, source, spotter)
 			self.spots.add(s)
 		else:
 			logger.debug('%s: dropped spot of %s at %s: too old.',

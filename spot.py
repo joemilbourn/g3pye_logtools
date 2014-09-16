@@ -41,10 +41,10 @@ class SpotSource:
 			puts(columns(*map(list, zip([str(spot.freq), spot.call, str(datetime.now()-spot.time+timedelta(hours=1)), str(spot.source)], widths))))
 
 	def repr_html (self):
-		output = "<table border=\"1px\"><tr><td>Freq</td><td>Call</td><td>Age</td><td>Spotter</td></tr>\n"
+		output = "<table border=\"1px\"><tr><td>Freq</td><td>Call</td><td>Age</td><td>Spotter</td><td>Source</td></tr>\n"
 		for spot in sorted(self.spots, key=lambda x: x.freq):
-			output += "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n" % (
-					str(spot.freq), spot.call, str(datetime.now()-(spot.time+timedelta(hours=1))), str(spot.spotter))
+			output += "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n" % (
+					str(spot.freq), spot.call, str(datetime.now()-(spot.time+timedelta(hours=1))), str(spot.spotter), spot.source)
 		output += "</table>\n"
 		return output
 
